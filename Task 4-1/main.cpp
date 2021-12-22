@@ -4,7 +4,12 @@
 * \brief Функция возвращает целочисленное число, введённое пользователем
 *\return Возвращает число, введённое пользователем
 */
-int InputInt();
+int InputInt(const std::string& message);
+/**
+*\brief Функция возвращает число типа size_t, введённое пользователем
+*\return Возвращает число, введённое пользователем
+*/
+size_t InputST(const std::string& message);
 /**
 *\brief Функция заполняет массив случайными числами
 *\param array массив
@@ -30,10 +35,10 @@ void ManualArray(int* array, const size_t n);
 */
 void MaxNegative(int* array, const size_t n);
 /**
-*\brief Функция считает количество положительных элементов и элементов, по модулю больших заданного числа
+*\brief Функция считает количество элементов в массиве, положительных и по модулю не превосходящих заданное число
 *\param array массив
 *\param n размер Массива
-*\return Возвращает количество положительных элементов и элементов, по модулю больших заданного числа
+*\return Возвращает количество элементов
 */
 int FindNumberOf(int* array, const size_t n);
 /**
@@ -57,45 +62,47 @@ enum class Input
 */
 int main(int argc, char* argv[])
 {
-	size_t n = InputInt();
+	size_t n = InputST("Enter number of elements in array");
 	std::cout << static_cast<int>(Input::random) << " — random\n"
-		<< static_cast<int>(Input::manual) << " — manual\n";
-
+		<< static_cast<int>(Input::manual) << " — manual";
 	int* array = new int[n];
-	int choose = InputInt();
-	auto chose = static_cast<Input>(choose);
-	switch (chose)
-	{
-	case Input::random:
-	{
-		RandomArray(array, n);
-		PrintArray(array, n);
-		break;
+	size_t choose = InputST("");
+	try {
+		auto chose = static_cast<Input>(choose);
+		switch (chose)
+		{
+		case Input::random:
+		{
+			RandomArray(array, n);
+			PrintArray(array, n);
+			break;
+		}
+		case Input::manual:
+		{
+			ManualArray(array, n);
+			PrintArray(array, n);
+			break;
+		}
+		}
 	}
-	case Input::manual:
-	{
-		ManualArray(array, n);
-		PrintArray(array, n);
-		break;
-	}
-	default:
-	{
+	catch (std::out_of_range&) {
 		return 1;
 	}
-	}
 
-	std::cout << "Number of elements, which positive of abs < some number\n" << FindNumberOf(array, n) << " — nuber of elements\n";
+	std::cout << "Number of elements, which positive and abs < some number\n" << FindNumberOf(array, n) << " — nuber of elements\n";
 	std::cout << "Numbers of first pair, which sum < some number\n";
 	int temp = FirstPair(array, n);
-	std::cout << "Numbers of first pair — " << temp << ", " << temp + 1 << std::endl;
+	std::cout << "Indexes of first pair — " << temp << ", " << temp + 1 << std::endl;
 	std::cout << "Replace 2nd element in array by maximum negative\n";
 	MaxNegative(array, n);
+	PrintArray(array, n);
 	return 0;
 }
+
 void PrintArray(int* array, const size_t n)
 {
 	std::cout << "Array: ";
-	for (int i = 0; i < n; i++)
+	for (size_t i = 0; i < n; i++)
 	{
 		std::cout << array[i] << " ";
 	}
@@ -107,7 +114,7 @@ void RandomArray(int* array, const size_t n)
 	std::random_device rnd;
 	std::mt19937 gen(rnd());
 	std::uniform_int_distribution<> Uniform_int_distribution(-10, 10);
-	for (int i = 0; i < n; i++)
+	for (size_t i = 0; i < n; i++)
 	{
 		array[i] = Uniform_int_distribution(gen);
 	}
@@ -115,7 +122,7 @@ void RandomArray(int* array, const size_t n)
 
 void ManualArray(int* array, const size_t n)
 {
-	for (int i = 0; i < n; i++)
+	for (size_t i = 0; i < n; i++)
 	{
 		std::cin >> array[i];
 	}
@@ -123,7 +130,7 @@ void ManualArray(int* array, const size_t n)
 
 void MaxNegative(int* array, const size_t n) {
 	int maximumNegative = 0;
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		if (array[i] < maximumNegative) {
 			maximumNegative = array[i];
 		}
@@ -131,20 +138,13 @@ void MaxNegative(int* array, const size_t n) {
 	if (maximumNegative != 0) {
 		array[1] = maximumNegative;
 	}
-	PrintArray(array, n);
 }
 
 int FindNumberOf(int* array, const size_t n) {
-	std::cout << "Enter number A\n";
-	int someNumber = InputInt();
-	int count = 0;
-	for (int i = 0; i < n; i++) {
-		if (array[i] < 0) {
-			if (abs(array[i]) < someNumber) {
-				count++;
-			}
-		}
-		else {
+	int someNumber = InputInt("Enter number A");
+	size_t count = 0;
+	for (size_t i = 0; i < n; i++) {
+		if (array[i] > 0 && abs(array[i]) < someNumber) {
 			count++;
 		}
 	}
@@ -152,20 +152,30 @@ int FindNumberOf(int* array, const size_t n) {
 }
 
 int FirstPair(int* array, const size_t n) {
-	std::cout << "Enter number A\n";
-	int someNumber = InputInt();
+	int someNumber = InputInt("Enter number A");
 	int finish = 0; //номер первого элемента пары
-	for (int i = 0; i < n - 1; i++) {
-		if (array[i] + array[i + 1] < someNumber) {
-			finish = i;
-			break;
-		}
+	size_t i = 0;
+	while (array[i] + array[i + 1] > someNumber) {
+		finish = i;
+		i++;
+	}
+	if (i < n - 1 && i != 0) {
+		finish++;
 	}
 	return finish;
 }
 
-int InputInt()
+int InputInt(const std::string& message)
 {
+	std::cout << message << std::endl;
+	int input = 0;
+	std::cin >> input;
+	return input;
+}
+
+size_t InputST(const std::string& message)
+{
+	std::cout << message << std::endl;
 	int input = 0;
 	std::cin >> input;
 	return input;
