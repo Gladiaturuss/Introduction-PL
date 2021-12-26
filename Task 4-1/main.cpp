@@ -1,15 +1,10 @@
 ﻿#include <iostream>
 #include <random>
 /**
-* \brief Функция возвращает целочисленное число, введённое пользователем
+*\brief Функция возвращает целочисленное число, введённое пользователем
 *\return Возвращает число, введённое пользователем
 */
 int InputInt(const std::string& message);
-/**
-*\brief Функция возвращает число типа size_t, введённое пользователем
-*\return Возвращает число, введённое пользователем
-*/
-size_t InputST(const std::string& message);
 /**
 *\brief Функция заполняет массив случайными числами
 *\param array массив
@@ -60,13 +55,13 @@ enum class Input
 *\brief Точка входа в программу
 *\return 0 в случае успеха
 */
-int main(int argc, char* argv[])
+int main()
 {
-	size_t n = InputST("Enter number of elements in array");
+	size_t n = InputInt("Enter number of elements in array");
 	std::cout << static_cast<int>(Input::random) << " — random\n"
 		<< static_cast<int>(Input::manual) << " — manual";
 	int* array = new int[n];
-	size_t choose = InputST("");
+	size_t choose = InputInt("");
 	try {
 		auto chose = static_cast<Input>(choose);
 		switch (chose)
@@ -141,10 +136,12 @@ void MaxNegative(int* array, const size_t n) {
 }
 
 int FindNumberOf(int* array, const size_t n) {
-	int someNumber = InputInt("Enter number A");
+	std::cout << "Enter number A: ";
+	int someNumber;
+	std::cin >> someNumber;
 	size_t count = 0;
 	for (size_t i = 0; i < n; i++) {
-		if (array[i] > 0 && abs(array[i]) < someNumber) {
+		if (array[i] >= 0 && abs(array[i]) < someNumber) {
 			count++;
 		}
 	}
@@ -152,10 +149,12 @@ int FindNumberOf(int* array, const size_t n) {
 }
 
 int FirstPair(int* array, const size_t n) {
-	int someNumber = InputInt("Enter number A");
-	int finish = 0; //номер первого элемента пары
+	std::cout << "Enter number A: ";
+	int someNumber;
+	std::cin >> someNumber;
+	int finish = 0; //индекс первого элемента пары
 	size_t i = 0;
-	while (array[i] + array[i + 1] > someNumber) {
+	while (array[i] + array[i + 1] > someNumber && i < n - 1) {
 		finish = i;
 		i++;
 	}
@@ -168,15 +167,10 @@ int FirstPair(int* array, const size_t n) {
 int InputInt(const std::string& message)
 {
 	std::cout << message << std::endl;
-	int input = 0;
+	int input = -1;
 	std::cin >> input;
-	return input;
-}
-
-size_t InputST(const std::string& message)
-{
-	std::cout << message << std::endl;
-	int input = 0;
-	std::cin >> input;
+	if (input < 0) {
+		throw (std::out_of_range("Incorrect size"));
+	}
 	return input;
 }
